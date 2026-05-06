@@ -1,0 +1,2435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Pessoas · Monumenta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS — fonte única de verdade
+   ═══════════════════════════════════════ */
+:root {
+  /* Cores base */
+  --bg:        #F4F3F0;
+  --surface:   #FAFAF8;
+  --surface2:  #F0EFEb;
+  --border:    #E2E0DA;
+  --border2:   #D0CEC7;
+
+  /* Texto */
+  --tx1: #1A1917;
+  --tx2: #5C5A55;
+  --tx3: #9C9A94;
+
+  /* Status */
+  --ok:       #3B6D11;
+  --ok-bg:    #EAF3DE;
+  --ok-mid:   #639922;
+  --alert:    #854F0B;
+  --alert-bg: #FAEEDA;
+  --alert-mid:#BA7517;
+  --crit:     #A32D2D;
+  --crit-bg:  #FCEBEB;
+  --crit-mid: #C94040;
+  --blue:     #185FA5;
+  --blue-bg:  #E8F0FB;
+  --blue-mid: #378ADD;
+
+  /* Cores dos blocos */
+  --recr:  #534AB7;
+  --onb:   #BA7517;
+  --gest:  #185FA5;
+  --comp:  #3B6D11;
+  --mono:  #993C1D;
+  --com:   #993556;
+  --time:  #854F0B;
+  --comp8: #0F6E56;
+  --off:   #A32D2D;
+  --aviso: #1A6FA8;
+  --prom:  #2E7D32;
+
+  /* Layout */
+  --radius-sm: 6px;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --shadow:    0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+
+  /* Tipografia */
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--tx1);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+button { font-family: var(--font); cursor: pointer; border: none; outline: none; }
+input, textarea, select { font-family: var(--font); outline: none; }
+
+/* ═══════════════════════════════════════
+   LAYOUT PRINCIPAL
+   ═══════════════════════════════════════ */
+.app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-logo .brand {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tx1);
+  letter-spacing: -0.01em;
+}
+.sidebar-logo .sub {
+  font-size: 11px;
+  color: var(--tx3);
+  margin-top: 2px;
+}
+
+.sidebar-section {
+  padding: 12px 10px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tx3);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 12px;
+  margin: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 450;
+  color: var(--tx2);
+  cursor: pointer;
+  transition: all 0.12s;
+  border: none;
+  background: none;
+  width: calc(100% - 12px);
+  text-align: left;
+}
+.nav-item:hover { background: var(--surface2); color: var(--tx1); }
+.nav-item.active { background: var(--tx1); color: #fff; }
+.nav-item .nav-icon { font-size: 14px; width: 18px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--crit-bg);
+  color: var(--crit);
+  padding: 1px 6px;
+  border-radius: 20px;
+}
+.nav-badge.blue { background: var(--blue-bg); color: var(--blue); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--tx3);
+}
+.sidebar-footer .date { font-weight: 500; color: var(--tx2); }
+
+/* MAIN */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+.topbar-title { font-size: 15px; font-weight: 600; color: var(--tx1); }
+.topbar-sub { font-size: 11.5px; color: var(--tx3); margin-top: 1px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.12s;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary { background: var(--tx1); color: #fff; }
+.btn-primary:hover { background: #2a2926; }
+.btn-ghost { background: transparent; color: var(--tx2); border: 1px solid var(--border2); }
+.btn-ghost:hover { background: var(--surface2); color: var(--tx1); }
+.btn-danger { background: var(--crit-bg); color: var(--crit); }
+.btn-danger:hover { background: #f5d5d5; }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+
+.content { padding: 24px 28px; flex: 1; }
+
+/* ═══════════════════════════════════════
+   VIEWS (páginas)
+   ═══════════════════════════════════════ */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ═══════════════════════════════════════
+   COMPONENTES COMUNS
+   ═══════════════════════════════════════ */
+.section-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tx3);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* STATUS BADGES */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge-ok    { background: var(--ok-bg);    color: var(--ok);    }
+.badge-alert { background: var(--alert-bg); color: var(--alert); }
+.badge-crit  { background: var(--crit-bg);  color: var(--crit);  }
+.badge-blue  { background: var(--blue-bg);  color: var(--blue);  }
+
+/* PRIORITY TAGS */
+.prio {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.prio-alta   { background: var(--crit-bg);  color: var(--crit);  }
+.prio-media  { background: var(--alert-bg); color: var(--alert); }
+.prio-baixa  { background: var(--ok-bg);    color: var(--ok);    }
+
+/* PROGRESS BAR */
+.progress-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ═══════════════════════════════════════
+   CARDS EXECUTIVOS (KPIs)
+   ═══════════════════════════════════════ */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+  cursor: default;
+}
+.kpi-card:hover { border-color: var(--border2); }
+.kpi-label { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--tx3); margin-bottom: 8px; }
+.kpi-value { font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: -0.02em; }
+.kpi-sub   { font-size: 11px; color: var(--tx3); margin-top: 5px; }
+.kpi-blue  { color: var(--blue); }
+.kpi-amber { color: var(--alert-mid); }
+.kpi-red   { color: var(--crit); }
+.kpi-green { color: var(--ok); }
+.kpi-tx    { color: var(--tx1); }
+
+/* ═══════════════════════════════════════
+   BLOCOS GRID (Visão Geral)
+   ═══════════════════════════════════════ */
+.blocks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.block-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.block-card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.block-card.ok    { border-left-color: var(--ok-mid); }
+.block-card.alert { border-left-color: var(--alert-mid); }
+.block-card.critical { border-left-color: var(--crit-mid); }
+
+.block-head { display: flex; align-items: center; gap: 9px; margin-bottom: 11px; }
+.block-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.block-name { font-size: 12px; font-weight: 500; line-height: 1.3; color: var(--tx1); }
+
+.task-mini { display: flex; flex-direction: column; gap: 5px; }
+.task-row-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--tx2);
+}
+.task-row-mini .lbl { min-width: 66px; }
+.task-row-mini .bar-w { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.task-row-mini .bar-f { height: 100%; border-radius: 2px; }
+.task-row-mini .cnt { min-width: 16px; text-align: right; color: var(--tx3); font-family: var(--mono); font-size: 10px; }
+
+.alert-chip {
+  margin-top: 10px;
+  font-size: 10.5px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: var(--crit-bg);
+  color: var(--crit);
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  line-height: 1.4;
+}
+
+/* ALERTAS ATIVOS */
+.alerts-list { display: flex; flex-direction: column; gap: 8px; }
+.alert-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--crit);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.alert-item.alert-lvl { border-left-color: var(--alert-mid); }
+.alert-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+.alert-body { flex: 1; }
+.alert-name { font-size: 12px; font-weight: 500; color: var(--tx1); margin-bottom: 2px; }
+.alert-msg  { font-size: 11.5px; color: var(--tx2); }
+
+/* ═══════════════════════════════════════
+   ROTINA DIÁRIA
+   ═══════════════════════════════════════ */
+.rotina-diaria-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.rotina-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.rotina-panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx1);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.rotina-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--tx2);
+  line-height: 1.4;
+}
+.rotina-item:last-child { border-bottom: none; }
+.rotina-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════
+   KANBAN
+   ═══════════════════════════════════════ */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.kanban-col {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-height: 200px;
+}
+.kanban-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.kanban-col-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.kanban-col-count {
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--tx2);
+  padding: 1px 7px;
+  border-radius: 20px;
+}
+.kanban-add {
+  width: 100%;
+  padding: 7px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border2);
+  background: transparent;
+  color: var(--tx3);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all 0.12s;
+  margin-top: 8px;
+  text-align: center;
+}
+.kanban-add:hover { border-color: var(--tx3); color: var(--tx2); background: var(--surface); }
+
+.kanban-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 11px;
+  margin-bottom: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow);
+}
+.kanban-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.kanban-card.overdue { background: var(--crit-bg); border-color: #f0b0b0; }
+.k-title { font-size: 12px; font-weight: 500; color: var(--tx1); margin-bottom: 5px; line-height: 1.3; }
+.k-meta  { font-size: 11px; color: var(--tx3); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.k-block-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.k-due { font-family: var(--mono); font-size: 10px; }
+.k-due.late { color: var(--crit); font-weight: 600; }
+.k-resp { color: var(--tx2); }
+
+/* ═══════════════════════════════════════
+   CHECKLISTS
+   ═══════════════════════════════════════ */
+.checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+.cl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid transparent;
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.cl-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.cl-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.cl-pct { font-size: 11px; color: var(--tx3); font-family: var(--mono); }
+.cl-group-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--tx3);
+  padding: 8px 0 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.cl-group-label.highlight {
+  color: #0D47A1;
+  background: rgba(13,71,161,0.06);
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: none;
+  margin-bottom: 4px;
+}
+.cl-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.cl-row:last-child { border-bottom: none; }
+.cl-checkbox {
+  width: 15px; height: 15px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border2);
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all 0.12s;
+  background: var(--surface);
+}
+.cl-checkbox.checked { background: var(--ok-mid); border-color: var(--ok-mid); color: #fff; }
+.cl-text { font-size: 12px; color: var(--tx2); line-height: 1.45; }
+.cl-sub  { font-size: 11px; color: var(--tx3); margin-top: 2px; line-height: 1.3; }
+.cl-tip {
+  margin-top: 10px;
+  background: var(--surface2);
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--tx2);
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* ═══════════════════════════════════════
+   ROTINAS (Semanal / Mensal)
+   ═══════════════════════════════════════ */
+.week-row { display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+.day-col {
+  flex: 1;
+  min-width: 150px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+.day-col.today { border-color: var(--blue-mid); border-top: 2px solid var(--blue-mid); }
+.day-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tx3);
+  margin-bottom: 10px;
+}
+.day-col.today .day-name { color: var(--blue); }
+.day-task {
+  font-size: 11.5px;
+  color: var(--tx2);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.4;
+}
+.day-task:last-child { border-bottom: none; }
+
+.monthly-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.monthly-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.monthly-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx1);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ═══════════════════════════════════════
+   MODAL
+   ═══════════════════════════════════════ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 520px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-md);
+  animation: modalIn 0.18s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+.modal-title { font-size: 15px; font-weight: 600; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+.modal-close { background: none; border: none; font-size: 18px; color: var(--tx3); cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+.modal-close:hover { background: var(--surface2); color: var(--tx1); }
+
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11.5px; font-weight: 500; color: var(--tx2); margin-bottom: 5px; display: block; }
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--tx1);
+  transition: border-color 0.12s;
+}
+.form-input:focus { border-color: var(--blue-mid); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+/* ═══════════════════════════════════════
+   TOAST NOTIFICATIONS
+   ═══════════════════════════════════════ */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  background: var(--tx1);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  box-shadow: var(--shadow-md);
+  animation: toastIn 0.2s ease;
+  max-width: 300px;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+/* ═══════════════════════════════════════
+   FECHAMENTO SEMANAL
+   ═══════════════════════════════════════ */
+.fechamento-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fechamento-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.fechamento-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx1);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fechamento-list { list-style: none; }
+.fechamento-list li {
+  font-size: 12px;
+  color: var(--tx2);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+.fechamento-list li:last-child { border-bottom: none; }
+.fechamento-tag {
+  font-size: 10px;
+  font-weight: 600;
+  font-family: var(--mono);
+  padding: 1px 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ═══════════════════════════════════════
+   MENU DE BUSCA RÁPIDA
+   ═══════════════════════════════════════ */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--tx3);
+  cursor: pointer;
+  min-width: 180px;
+}
+.search-bar input {
+  background: none;
+  border: none;
+  font-size: 12.5px;
+  color: var(--tx1);
+  width: 100%;
+}
+.search-bar input::placeholder { color: var(--tx3); }
+
+/* ═══════════════════════════════════════
+   HISTÓRICO
+   ═══════════════════════════════════════ */
+.history-list { display: flex; flex-direction: column; gap: 6px; }
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.history-time {
+  font-size: 10.5px;
+  font-family: var(--mono);
+  color: var(--tx3);
+  white-space: nowrap;
+  min-width: 90px;
+}
+.history-text { font-size: 12px; color: var(--tx2); line-height: 1.4; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVIDADE
+   ═══════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .kpi-row { grid-template-columns: repeat(3, 1fr); }
+  .kanban-board { grid-template-columns: repeat(2, 1fr); }
+  .rotina-diaria-grid { grid-template-columns: 1fr; }
+  .fechamento-grid { grid-template-columns: 1fr; }
+  .monthly-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .content { padding: 16px; }
+  .topbar { padding: 12px 16px; }
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .kanban-board { grid-template-columns: 1fr; }
+}
+
+/* ═══════════════════════════════════════
+   ANIMAÇÕES DE ENTRADA
+   ═══════════════════════════════════════ */
+.fade-in {
+  animation: fadeIn 0.25s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* NOVO BADGE */
+.novo { display: inline-block; font-size: 9px; font-weight: 700; background: var(--recr); color: #fff; padding: 1px 5px; border-radius: 4px; margin-right: 4px; vertical-align: middle; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--tx3);
+}
+.empty-state .empty-icon { font-size: 32px; margin-bottom: 10px; }
+.empty-state .empty-text { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════════════
+       SIDEBAR
+  ══════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">Monumenta</div>
+      <div class="sub">Gestão de Pessoas · RH</div>
+    </div>
+
+    <div class="sidebar-section">Painel</div>
+    <button class="nav-item active" onclick="goTo('overview')">
+      <span class="nav-icon">◈</span> Visão Geral
+    </button>
+    <button class="nav-item" onclick="goTo('rotina')">
+      <span class="nav-icon">☀</span> Rotina Diária
+      <span class="nav-badge" id="badgeRotina">—</span>
+    </button>
+    <button class="nav-item" onclick="goTo('kanban')">
+      <span class="nav-icon">⊞</span> Kanban
+      <span class="nav-badge" id="badgeKanban">—</span>
+    </button>
+
+    <div class="sidebar-section">Operação</div>
+    <button class="nav-item" onclick="goTo('checklists')">
+      <span class="nav-icon">✓</span> Checklists
+    </button>
+    <button class="nav-item" onclick="goTo('rotinas')">
+      <span class="nav-icon">⟳</span> Ritmo Semanal
+    </button>
+    <button class="nav-item" onclick="goTo('fechamento')">
+      <span class="nav-icon">📋</span> Fechamento
+    </button>
+
+    <div class="sidebar-section">Histórico</div>
+    <button class="nav-item" onclick="goTo('historico')">
+      <span class="nav-icon">◷</span> Log de Ações
+    </button>
+
+    <div class="sidebar-footer">
+      <div class="date" id="sidebarDate">—</div>
+      <div style="margin-top:2px;">11 blocos ativos</div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════
+       MAIN
+  ══════════════════════ -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Visão Geral</div>
+        <div class="topbar-sub" id="topbarSub">Painel de controle operacional · 11 blocos ativos</div>
+      </div>
+      <div class="topbar-actions">
+        <span id="syncBadge" style="display:none;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;transition:all 0.2s;"></span>
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar tarefa..." oninput="searchTasks(this.value)" id="searchInput">
+        </div>
+        <button class="btn btn-primary" onclick="openModalNewTask()">+ Nova tarefa</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══════════════════════
+           VIEW: VISÃO GERAL
+      ══════════════════════ -->
+      <div class="view active fade-in" id="view-overview">
+
+        <!-- KPIs -->
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">Total ativas</div>
+            <div class="kpi-value kpi-tx" id="kpiAtivas">—</div>
+            <div class="kpi-sub">todos os blocos</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Pendentes</div>
+            <div class="kpi-value kpi-amber" id="kpiPendentes">—</div>
+            <div class="kpi-sub">aguardando início</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Em andamento</div>
+            <div class="kpi-value kpi-blue" id="kpiAndamento">—</div>
+            <div class="kpi-sub">em execução</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Atrasadas</div>
+            <div class="kpi-value kpi-red" id="kpiAtrasadas">—</div>
+            <div class="kpi-sub">ação imediata</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Concluídas</div>
+            <div class="kpi-value kpi-green" id="kpiConcluidas">—</div>
+            <div class="kpi-sub">este mês</div>
+          </div>
+        </div>
+
+        <!-- Semáforo dos blocos -->
+        <div class="section-label">Semáforo dos blocos</div>
+        <div class="blocks-grid" id="blocksGrid"></div>
+
+        <!-- Alertas ativos -->
+        <div class="section-label" style="margin-top:24px;">Alertas ativos</div>
+        <div class="alerts-list" id="alertsList"></div>
+
+      </div>
+
+      <!-- ══════════════════════
+           VIEW: ROTINA DIÁRIA
+      ══════════════════════ -->
+      <div class="view fade-in" id="view-rotina">
+
+        <div class="rotina-diaria-grid">
+
+          <!-- Painel: Atrasadas -->
+          <div class="rotina-panel">
+            <div class="rotina-panel-title">🔴 Tarefas atrasadas</div>
+            <div id="rotinaAtrasadas">
+              <div class="empty-state"><div class="empty-icon">✓</div><div class="empty-text">Nenhuma tarefa atrasada</div></div>
+            </div>
+          </div>
+
+          <!-- Painel: Vencem hoje -->
+          <div class="rotina-panel">
+            <div class="rotina-panel-title">🟡 Vencem hoje</div>
+            <div id="rotinaHoje">
+              <div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Nenhuma tarefa vence hoje</div></div>
+            </div>
+          </div>
+
+          <!-- Painel: Follow-ups pendentes -->
+          <div class="rotina-panel">
+            <div class="rotina-panel-title">🔵 Follow-ups pendentes</div>
+            <div id="rotinaFollowups">
+              <div class="empty-state"><div class="empty-icon">👌</div><div class="empty-text">Sem follow-ups pendentes</div></div>
+            </div>
+          </div>
+
+          <!-- Painel: 3 prioridades do dia -->
+          <div class="rotina-panel">
+            <div class="rotina-panel-title">⚡ Top 3 prioridades</div>
+            <div id="rotinaPrioridades">
+              <div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-text">Defina suas prioridades do dia</div></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Resumo do dia -->
+        <div class="section-label">Resumo executivo do dia</div>
+        <div class="card" id="resumoDia" style="line-height:1.8;">
+          <!-- preenchido via JS -->
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════
+           VIEW: KANBAN
+      ══════════════════════ -->
+      <div class="view fade-in" id="view-kanban">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <div class="section-label" style="margin:0;">Kanban de tarefas · todos os blocos</div>
+          <div style="display:flex;gap:6px;">
+            <select class="form-input" style="width:auto;padding:5px 10px;font-size:12px;" onchange="filterKanban(this.value)" id="kanbanFilter">
+              <option value="">Todos os blocos</option>
+            </select>
+          </div>
+        </div>
+        <div class="kanban-board" id="kanbanBoard"></div>
+      </div>
+
+      <!-- ══════════════════════
+           VIEW: CHECKLISTS
+      ══════════════════════ -->
+      <div class="view fade-in" id="view-checklists">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <div class="section-label" style="margin:0;">Checklists operacionais · 11 blocos</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="resetChecklists()">Resetar todos</button>
+            <button class="btn btn-primary btn-sm" onclick="exportChecklist()">Exportar resumo</button>
+          </div>
+        </div>
+        <div class="checklist-grid" id="checklistGrid"></div>
+      </div>
+
+      <!-- ══════════════════════
+           VIEW: RITMO SEMANAL
+      ══════════════════════ -->
+      <div class="view fade-in" id="view-rotinas">
+
+        <div class="section-label">Ritmo semanal · tarefas por dia</div>
+        <div class="week-row" id="weekRow"></div>
+
+        <div class="section-label" style="margin-top:28px;">Rotinas mensais</div>
+        <div class="monthly-grid" id="monthlyGrid"></div>
+
+      </div>
+
+      <!-- ══════════════════════
+           VIEW: FECHAMENTO
+      ══════════════════════ -->
+      <div class="view fade-in" id="view-fechamento">
+
+        <!-- SEMANAL -->
+        <div class="section-label">Fechamento semanal</div>
+        <div class="fechamento-grid" style="margin-bottom:28px;">
+          <div class="fechamento-card">
+            <div class="fechamento-title">✅ Concluídas na semana</div>
+            <ul class="fechamento-list" id="fechSemConcluidas"></ul>
+          </div>
+          <div class="fechamento-card">
+            <div class="fechamento-title">⚠️ Atrasadas / gargalos</div>
+            <ul class="fechamento-list" id="fechSemAtrasadas"></ul>
+          </div>
+          <div class="fechamento-card">
+            <div class="fechamento-title">🔄 Decisões pendentes</div>
+            <ul class="fechamento-list" id="fechSemDecisoes"></ul>
+          </div>
+          <div class="fechamento-card">
+            <div class="fechamento-title">➡️ Próximos passos</div>
+            <ul class="fechamento-list" id="fechSemProximos"></ul>
+          </div>
+        </div>
+
+        <!-- MENSAL -->
+        <div class="section-label">Fechamento mensal · relatório de indicadores</div>
+        <div class="fechamento-grid">
+          <div class="fechamento-card">
+            <div class="fechamento-title">📊 Indicadores por bloco</div>
+            <ul class="fechamento-list" id="fechMesIndicadores"></ul>
+          </div>
+          <div class="fechamento-card">
+            <div class="fechamento-title">📈 Evolução dos checklists</div>
+            <ul class="fechamento-list" id="fechMesChecklists"></ul>
+          </div>
+          <div class="fechamento-card">
+            <div class="fechamento-title">🚨 Principais riscos</div>
+            <ul class="fechamento-list" id="fechMesRiscos"></ul>
+          </div>
+          <div class="fechamento-card">
+            <div class="fechamento-title">💡 Recomendações</div>
+            <ul class="fechamento-list" id="fechMesRecom"></ul>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════
+           VIEW: HISTÓRICO
+      ══════════════════════ -->
+      <div class="view fade-in" id="view-historico">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div class="section-label" style="margin:0;">Log de ações · histórico completo</div>
+          <button class="btn btn-ghost btn-sm" onclick="clearHistory()">Limpar histórico</button>
+        </div>
+        <div class="history-list" id="historyList">
+          <div class="empty-state"><div class="empty-icon">◷</div><div class="empty-text">Nenhuma ação registrada ainda</div></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /app -->
+
+<!-- ══════════════════════
+     MODAL: NOVA / EDITAR TAREFA
+══════════════════════ -->
+<div class="modal-overlay" id="modalTask">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalTaskTitle">Nova Tarefa</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título da tarefa *</label>
+      <input type="text" class="form-input" id="taskTitle" placeholder="Descreva a tarefa...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Bloco *</label>
+        <select class="form-input" id="taskBlock"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-input" id="taskStatus">
+          <option value="pendente">Pendente</option>
+          <option value="andamento">Em andamento</option>
+          <option value="atrasada">Atrasada</option>
+          <option value="concluida">Concluída</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Responsável</label>
+        <input type="text" class="form-input" id="taskResponsavel" placeholder="Nome do responsável">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prazo</label>
+        <input type="date" class="form-input" id="taskPrazo">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Prioridade</label>
+        <select class="form-input" id="taskPrioridade">
+          <option value="alta">Alta</option>
+          <option value="media">Média</option>
+          <option value="baixa">Baixa</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Follow-up?</label>
+        <select class="form-input" id="taskFollowup">
+          <option value="nao">Não</option>
+          <option value="sim">Sim — aguardando resposta</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Observações</label>
+      <textarea class="form-input" id="taskObs" rows="2" placeholder="Contexto adicional, links, referências..."></textarea>
+    </div>
+    <div class="form-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-danger btn-sm" id="btnDeleteTask" onclick="deleteCurrentTask()" style="display:none;">Excluir</button>
+      <button class="btn btn-primary" onclick="saveTask()">Salvar tarefa</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ══════════════════════
+     SCRIPT PRINCIPAL
+══════════════════════ -->
+<script>
+/* ══════════════════════════════════════════
+   BASE DE DADOS — separada da interface
+   Estrutura editável e expansível
+   ══════════════════════════════════════════ */
+
+const DB = {
+  /* ─── BLOCOS ─────────────────────────────────
+     Cada bloco representa uma área de gestão.
+     Campos: id, name, icon, color, status, alert, boasPraticas, groups (checklists)
+  ─────────────────────────────────────────────── */
+  blocks: [
+    {
+      id: 'recr', name: '1. Recrutamento & Seleção', icon: '🔍', color: '#534AB7',
+      status: 'alert',
+      alert: '1 vaga sem briefing · feedback pendente para 2 candidatos',
+      boasPraticas: 'Registre tudo, padronize o processo e mantenha a comunicação clara.',
+      groups: [
+        { title: 'Alinhamento da vaga', items: [
+          { q: 'O demandante ofereceu todas as informações?', s: 'A vaga foi alinhada em todos os pontos importantes?' },
+          { q: 'Tem o script da conversa?', s: 'O briefing e o script para alinhamento da vaga estão prontos?' },
+          { q: 'Quais perguntas não podem faltar?', s: 'As perguntas essenciais (técnicas e comportamentais) estão definidas?' },
+          { q: 'Vai usar IA para documentar?', s: 'A IA será utilizada para apoio na transcrição, resumo ou análise?' },
+          { q: 'Tem budget e benefícios definidos?', s: 'Salário, benefícios e estrutura de contratação estão aprovados?' },
+          { q: 'A função está clara para o gestor?', s: 'O gestor entende o perfil e as competências da vaga?' },
+        ]},
+        { title: 'Processo e fechamento', items: [
+          { q: 'A comunicação foi feita com o candidato?', s: 'Deu feedback em caso de não aprovação?' },
+          { q: 'Registrou o contato?', s: 'Todas as interações e contatos foram registrados no sistema?' },
+          { q: 'Fez o relatório da entrevista?', s: 'O relatório da entrevista foi preenchido e salvo?' },
+          { q: 'Onde salva essas ações?', s: 'As informações e documentos estão salvos na rede/local correto?' },
+        ]},
+        { title: 'Processos gerais', items: [
+          { q: 'Alinhamento de vaga com a área realizado?', s: '' },
+          { q: 'Divulgação feita (LinkedIn / indicação / banco)?', s: '' },
+          { q: 'Triagem com base na descrição da função?', s: '' },
+          { q: 'Entrevistas realizadas (técnica + comportamental)?', s: '' },
+          { q: 'Proposta e aprovação concluídas?', s: '' },
+          { q: 'Controle semanal de vagas abertas atualizado?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'onb', name: '2. Onboarding', icon: '👤', color: '#BA7517',
+      status: 'ok', alert: '',
+      boasPraticas: 'Siga o fluxo padrão de onboarding e mantenha todas as áreas informadas.',
+      groups: [
+        { title: 'Perguntas balizadoras', items: [
+          { q: 'Com o modelo de proposta definido já?', s: 'A proposta está alinhada à política e ao pacote aprovado?' },
+          { q: 'Usar fluxo para avisar outras áreas?', s: 'As áreas envolvidas foram notificadas no fluxo correto?' },
+          { q: 'Sistema preenchido com os dados necessários?', s: 'Todas as informações do colaborador foram registradas?' },
+          { q: 'Contratos emitidos, declarações também?', s: 'Todos os documentos obrigatórios foram emitidos e assinados?' },
+          { q: 'Calendário com datas agendadas para retorno?', s: 'Os check-ins e retornos estão agendados e registrados?' },
+        ]},
+        { title: 'Processos gerais', items: [
+          { q: 'Proposta e aceite registrados?', s: '' },
+          { q: 'Coleta de dados e cadastro completo realizado?', s: '' },
+          { q: 'Explicação de benefícios feita?', s: '' },
+          { q: 'Solicitação de acessos e ferramentas enviada?', s: '' },
+          { q: 'Apresentação institucional e da área realizada?', s: '' },
+          { q: 'Acompanhamento 30 / 60 / 90 dias programado?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'gest', name: '3. Gestão & Acompanhamento', icon: '👥', color: '#185FA5',
+      status: 'alert',
+      alert: '2 colaboradores sem check-in · acompanhamento de inglês pendente',
+      boasPraticas: 'Registre as conversas, acompanhe as percepções e aja com imparcialidade e clareza.',
+      groups: [
+        { title: 'Perguntas balizadoras', items: [
+          { q: 'Você registra as conversas?', s: 'As conversas (1:1, feedbacks, alinhamentos) estão sendo registradas?' },
+          { q: 'Você identifica pontos de clima da agência?', s: 'Os sinais do clima (conflitos, insatisfações, desmotivação) estão mapeados?' },
+          { q: 'Você é imparcial nas situações?', s: 'Você analisa os fatos com equilíbrio, sem tomar partido?' },
+          { q: 'Você enfrenta desgaste nas relações?', s: 'Você lida com conflitos sem evitar conversas difíceis?' },
+          { q: 'Você se posiciona quando necessário?', s: 'Você se posiciona de forma firme e respeitosa quando precisa?' },
+          { q: 'Sua comunicação é clara e objetiva?', s: 'Suas mensagens são diretas e geram entendimento e ação?' },
+        ]},
+        { title: 'Processos gerais', items: [
+          { q: 'Conversas com colaboradores (check-ins) realizadas?', s: '' },
+          { q: 'Registro de pontos discutidos feito?', s: '' },
+          { q: 'Definição de ações necessárias concluída?', s: '' },
+          { q: 'Responsáveis e prazos definidos?', s: '' },
+          { q: 'Acompanhamento de evolução feito?', s: '' },
+          { q: 'Feedbacks e desenvolvimento registrados?', s: '' },
+          { q: '<span class="novo">NOVO</span> Atualização do MonuTrack nas áreas de responsabilidade?', s: '' },
+          { q: '<span class="novo">NOVO</span> Acompanhar Wellhub / Zenklub e Escritório RJ?', s: '' },
+        ]},
+        { title: '🇬🇧 Aulas de Inglês — Coordenadores', highlight: true, items: [
+          { q: 'Lista de coordenadores ativos está atualizada?', s: 'Todos os coordenadores elegíveis estão cadastrados no benefício?' },
+          { q: 'Frequência do mês foi verificada?', s: 'O relatório de presença das aulas foi acompanhado?' },
+          { q: 'Algum coordenador com frequência abaixo do mínimo?', s: 'Existe algum colaborador com faltas recorrentes?' },
+          { q: 'Desenvolvimento dos coordenadores acompanhado?', s: 'Há registro do progresso individual no programa?' },
+          { q: 'Algum coordenador precisa ser incluído?', s: 'Novo coordenador elegível que ainda não está cadastrado?' },
+          { q: 'Algum coordenador precisa ser excluído?', s: 'Coordenador que saiu da função ou não se enquadra mais?' },
+          { q: 'Exclusão/inclusão comunicada ao fornecedor?', s: 'A escola foi notificada sobre mudanças na lista?' },
+          { q: 'Registro da movimentação feito internamente?', s: 'A alteração foi documentada no sistema?' },
+        ]},
+      ]
+    },
+    {
+      id: 'comp', name: '4. Compliance', icon: '🛡', color: '#3B6D11',
+      status: 'ok', alert: '',
+      boasPraticas: 'Mantenha controle rigoroso de vencimentos e assinaturas.',
+      groups: [
+        { title: 'Processos gerais', items: [
+          { q: 'Envio de políticas e documentos realizado?', s: '' },
+          { q: 'Assinatura via Clicksign concluída?', s: '' },
+          { q: 'Controle de adesão e validade atualizado?', s: '' },
+          { q: 'Follow-up de pendências realizado?', s: '' },
+          { q: 'Treinamento obrigatório semestral em dia?', s: '' },
+          { q: 'Atualização de documentos feita?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'mono', name: '5. Monuway (Cultura)', icon: '⭐', color: '#993C1D',
+      status: 'ok', alert: '',
+      boasPraticas: 'Cultura é construída no dia a dia. Planeje ações com antecedência e acompanhe o engajamento real.',
+      groups: [
+        { title: 'Processos gerais', items: [
+          { q: 'Planejamento de ações e iniciativas feito?', s: '' },
+          { q: 'Comunicação das campanhas realizada?', s: '' },
+          { q: 'Execução das ações acompanhada?', s: '' },
+          { q: 'Engajamento das equipes monitorado?', s: '' },
+          { q: 'Acompanhamento de resultados feito?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'com', name: '6. Comunicação Interna', icon: '📢', color: '#993556',
+      status: 'ok', alert: '',
+      boasPraticas: 'Comunique com 3 a 5 dias de antecedência e confirme o entendimento.',
+      groups: [
+        { title: 'Processos gerais', items: [
+          { q: 'Planejamento mensal de comunicação feito?', s: '' },
+          { q: 'Comunicação de feriados e pontos facultativos realizada?', s: '' },
+          { q: 'Avisos e alinhamentos importantes enviados?', s: '' },
+          { q: 'Antecedência nas comunicações (3 a 5 dias) respeitada?', s: '' },
+          { q: 'Confirmação de alcance e entendimento obtida?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'time', name: '7. Timesheet', icon: '📊', color: '#854F0B',
+      status: 'critical',
+      alert: '3 pessoas com preenchimento atrasado · relatório semanal pendente',
+      boasPraticas: 'Timesheet em dia é inegociável. Cobre com estrutura e registre as pendências.',
+      groups: [
+        { title: 'Processos gerais', items: [
+          { q: 'Relatório semanal de timesheet (Wrike) gerado?', s: '' },
+          { q: 'Análise de preenchimento por pessoa e área feita?', s: '' },
+          { q: 'Identificação de pendências e inconsistências realizada?', s: '' },
+          { q: 'Cobrança estruturada com líderes feita?', s: '' },
+          { q: 'Ajustes e regularização do preenchimento concluídos?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'comp8', name: '8. Compras', icon: '🛒', color: '#0F6E56',
+      status: 'ok', alert: '',
+      boasPraticas: 'Mapeie as necessidades com antecedência para evitar urgências.',
+      groups: [
+        { title: 'Máquinas e periféricos', items: [
+          { q: 'Necessidades das áreas mapeadas?', s: '' },
+          { q: 'Cotação e comparação de fornecedores realizada?', s: '' },
+          { q: 'Aprovação e compra concluídas?', s: '' },
+          { q: 'Acompanhamento de entrega e garantia feito?', s: '' },
+        ]},
+        { title: 'Licenças', items: [
+          { q: 'Levantamento e renovação de licenças feitos?', s: '' },
+          { q: 'Controle de vigência e usuários atualizado?', s: '' },
+          { q: 'Negociação e gestão de contratos realizadas?', s: '' },
+        ]},
+        { title: 'Móveis e utensílios', items: [
+          { q: 'Levantamento de necessidades feito?', s: '' },
+          { q: 'Cotação e compra realizadas?', s: '' },
+          { q: 'Controle de patrimônio e localização atualizado?', s: '' },
+        ]},
+        { title: 'Insumos Escritório RJ', items: [
+          { q: 'Levantamento, cotação e compra de insumos realizados?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'off', name: '9. Offboarding', icon: '🚪', color: '#A32D2D',
+      status: 'ok', alert: '',
+      boasPraticas: 'Agradeça a jornada do colaborador e mantenha as portas abertas para o futuro.',
+      groups: [
+        { title: 'Perguntas balizadoras', items: [
+          { q: 'Feedback de saída realizado?', s: 'Foi realizada a conversa de desligamento de forma respeitosa?' },
+          { q: 'Pesquisa de desligamento aplicada?', s: 'A pesquisa foi enviada e respondida pelo colaborador?' },
+          { q: 'Acessos e ferramentas desativados?', s: 'Todos os acessos (sistemas, e-mails, plataformas) foram desativados?' },
+          { q: 'Máquinas e equipamentos devolvidos?', s: 'Foi verificada a devolução de notebooks, celulares, periféricos?' },
+          { q: 'Licenças desativadas com o suporte?', s: 'Foi enviado e-mail para o suporte solicitando desativação?' },
+          { q: 'Necessidade de backup identificada?', s: 'Foi avisado ao suporte caso haja necessidade de backup?' },
+          { q: 'Processos e documentação encerrados?', s: 'Todos os processos do desligamento foram concluídos e arquivados?' },
+        ]},
+        { title: 'Processos gerais', items: [
+          { q: 'Aplicar pesquisa de desligamento?', s: '' },
+          { q: 'Desligar acessos e ferramentas?', s: '' },
+          { q: 'Devolução de máquinas e equipamentos verificada?', s: '' },
+          { q: 'Encerrar processos e documentação?', s: '' },
+          { q: 'Comunicar áreas envolvidas?', s: '' },
+          { q: 'Agradecer e manter relacionamento?', s: '' },
+        ]},
+        { title: 'E-mail para suporte · informar', items: [
+          { q: 'Nome completo do colaborador informado?', s: '' },
+          { q: 'Data do desligamento informada?', s: '' },
+          { q: 'Licenças / sistemas utilizados listados?', s: '' },
+          { q: 'Necessidade de backup indicada (Sim / Não)?', s: '' },
+          { q: 'Observações adicionais incluídas?', s: '' },
+        ]},
+      ]
+    },
+    {
+      id: 'aviso', name: '10. Avisos de Entrada', icon: '🔔', color: '#1A6FA8',
+      status: 'ok', alert: '',
+      boasPraticas: 'O aviso de entrada garante que todas as áreas estejam preparadas desde o primeiro dia.',
+      groups: [
+        { title: 'Checklist de aviso de entrada', items: [
+          { q: 'Áreas envolvidas comunicadas?', s: 'Todos os times que precisam saber da chegada foram avisados?' },
+          { q: 'Data de início e cargo informados?', s: 'A data de entrada e o cargo foram comunicados corretamente?' },
+          { q: 'Novo colaborador apresentado?', s: 'A apresentação formal foi feita para as áreas e o time?' },
+          { q: 'Acessos e estrutura preparados?', s: 'Os acessos a sistemas, e-mail e ferramentas estão prontos?' },
+          { q: 'Registrado no canal de avisos internos?', s: 'O aviso foi publicado no canal oficial de comunicação interna?' },
+        ]},
+      ]
+    },
+    {
+      id: 'prom', name: '11. Avisos de Promoções', icon: '📈', color: '#2E7D32',
+      status: 'ok', alert: '',
+      boasPraticas: 'Reconhecer e comunicar promoções estruturadamente fortalece a cultura de valorização.',
+      groups: [
+        { title: 'Checklist de aviso de promoção', items: [
+          { q: 'Promoção e nova função comunicadas?', s: 'A mudança de cargo foi comunicada para as áreas envolvidas?' },
+          { q: 'Data de vigência informada?', s: 'A data de início da nova função foi informada e registrada?' },
+          { q: 'Parabéns públicos realizados?', s: 'O colaborador foi reconhecido pelo canal de comunicação interna?' },
+          { q: 'Acessos e sistema atualizados?', s: 'As permissões foram atualizadas conforme a nova função?' },
+          { q: 'Histórico do colaborador registrado?', s: 'A promoção foi documentada no sistema e no prontuário?' },
+        ]},
+      ]
+    },
+  ],
+
+  /* ─── TAREFAS ────────────────────────────────
+     Geradas dinamicamente. Campos completos.
+  ─────────────────────────────────────────────── */
+  tasks: [
+    { id: 't001', title: 'Briefing — vaga Dev Backend', blockId: 'recr', status: 'pendente', responsavel: 'Mariana', prazo: '2025-05-10', prioridade: 'alta', followup: 'nao', obs: '1 vaga sem briefing completo' },
+    { id: 't002', title: 'Timesheet semana 17 — cobrança', blockId: 'time', status: 'pendente', responsavel: 'Mariana', prazo: '2025-05-09', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't003', title: 'Aviso entrada — novo colaborador', blockId: 'aviso', status: 'pendente', responsavel: 'Mariana', prazo: '2025-05-09', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't004', title: 'Check-in João (90 dias)', blockId: 'gest', status: 'pendente', responsavel: 'Mariana', prazo: '2025-05-15', prioridade: 'media', followup: 'nao', obs: '' },
+    { id: 't005', title: 'Verificar frequência inglês — maio', blockId: 'gest', status: 'pendente', responsavel: 'Mariana', prazo: '2025-05-20', prioridade: 'media', followup: 'nao', obs: '' },
+    { id: 't006', title: 'Plano comunicação maio', blockId: 'com', status: 'pendente', responsavel: 'Mariana', prazo: '2025-05-12', prioridade: 'media', followup: 'nao', obs: '' },
+    { id: 't007', title: 'Onboarding — Ana Souza', blockId: 'onb', status: 'andamento', responsavel: 'Mariana', prazo: '2025-05-14', prioridade: 'alta', followup: 'nao', obs: 'Entrada prevista segunda-feira' },
+    { id: 't008', title: 'Promoção — Carlos Lima', blockId: 'prom', status: 'andamento', responsavel: 'Mariana', prazo: '2025-05-10', prioridade: 'alta', followup: 'sim', obs: 'Aguardando aprovação do RH' },
+    { id: 't009', title: 'Entrevista final — vaga Designer', blockId: 'recr', status: 'andamento', responsavel: 'Mariana', prazo: '2025-05-11', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't010', title: 'Contrato — Pedro Fernandes', blockId: 'comp', status: 'andamento', responsavel: 'Mariana', prazo: '2025-05-13', prioridade: 'alta', followup: 'sim', obs: 'Aguardando Clicksign' },
+    { id: 't011', title: 'Relatório semanal de timesheet', blockId: 'time', status: 'andamento', responsavel: 'Mariana', prazo: '2025-05-09', prioridade: 'media', followup: 'nao', obs: '' },
+    { id: 't012', title: 'Offboarding — Lúcia Mota', blockId: 'off', status: 'andamento', responsavel: 'Mariana', prazo: '2025-05-10', prioridade: 'alta', followup: 'nao', obs: 'Último dia: 09/05' },
+    { id: 't013', title: 'Relatório Wrike semana 16', blockId: 'time', status: 'atrasada', responsavel: 'Mariana', prazo: '2025-04-25', prioridade: 'alta', followup: 'nao', obs: 'CRÍTICO — 3 semanas de atraso' },
+    { id: 't014', title: 'Relatório Wrike semana 15', blockId: 'time', status: 'atrasada', responsavel: 'Mariana', prazo: '2025-04-18', prioridade: 'alta', followup: 'nao', obs: 'CRÍTICO' },
+    { id: 't015', title: 'Relatório Wrike semana 14', blockId: 'time', status: 'atrasada', responsavel: 'Mariana', prazo: '2025-04-11', prioridade: 'alta', followup: 'nao', obs: 'CRÍTICO' },
+    { id: 't016', title: 'Feedback candidato Ana P.', blockId: 'recr', status: 'atrasada', responsavel: 'Mariana', prazo: '2025-05-02', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't017', title: 'Aviso entrada — Roberto Silva', blockId: 'aviso', status: 'concluida', responsavel: 'Mariana', prazo: '2025-04-30', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't018', title: 'Promoção publicada — Thiago R.', blockId: 'prom', status: 'concluida', responsavel: 'Mariana', prazo: '2025-04-28', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't019', title: 'Inclusão inglês — coordenador Pedro', blockId: 'gest', status: 'concluida', responsavel: 'Mariana', prazo: '2025-04-25', prioridade: 'media', followup: 'nao', obs: '' },
+    { id: 't020', title: 'Treinamento compliance Q1', blockId: 'comp', status: 'concluida', responsavel: 'Mariana', prazo: '2025-04-20', prioridade: 'alta', followup: 'nao', obs: '' },
+    { id: 't021', title: 'Renovação licença Adobe', blockId: 'comp8', status: 'concluida', responsavel: 'Mariana', prazo: '2025-04-15', prioridade: 'media', followup: 'nao', obs: '' },
+  ],
+
+  /* ─── RITMO SEMANAL ─────────────────────────── */
+  weekDays: [
+    { name: 'Segunda', tasks: ['Revisar painel de controle geral', 'Verificar timesheets da semana anterior', 'Checar vagas abertas no pipeline', 'Acompanhar onboardings em andamento'] },
+    { name: 'Terça',   tasks: ['Processar documentos e compliance', 'Enviar comunicados programados', 'Checar avisos de entrada pendentes', 'Acompanhar compras e solicitações'] },
+    { name: 'Quarta',  tasks: ['Reuniões 1:1 e check-ins com gestores', 'Revisar preenchimento de timesheet', 'Atualizar kanban de tarefas', 'Monitorar ações de cultura (Monuway)'] },
+    { name: 'Quinta',  tasks: ['Follow-up de pendências críticas', 'Revisar compliance e vencimentos', 'Cobrar timesheets atrasados', 'Verificar offboardings em aberto'] },
+    { name: 'Sexta',   tasks: ['Fechar relatório semanal de RH', 'Planejar comunicações da próxima semana', 'Verificar frequência inglês coordenadores', 'Preparar pauta de reunião de gestão'] },
+  ],
+
+  /* ─── ROTINAS MENSAIS ────────────────────────── */
+  monthlyRoutines: [
+    { title: 'Início do mês', color: '#3B6D11', icon: '🟢', items: ['Revisar vagas abertas e pipeline', 'Planejar comunicações e ações de cultura', 'Mapear vencimentos de contratos e licenças', 'Confirmar agenda de check-ins e 1:1s', 'Verificar lista de coordenadores no inglês'] },
+    { title: 'Meio do mês',   color: '#185FA5', icon: '🔵', items: ['Consolidar timesheet da 1ª quinzena', 'Verificar indicadores por bloco', 'Aplicar pesquisas de clima pendentes', 'Revisar frequência das aulas de inglês', 'Revisar ações de onboarding 30/60/90 dias'] },
+    { title: 'Final do mês',  color: '#993C1D', icon: '🟠', items: ['Fechar relatório geral de gestão de pessoas', 'Enviar relatório de timesheet para líderes', 'Renovar licenças e documentos vencendo', 'Consolidar inclusões/exclusões no programa de inglês', 'Revisar e atualizar o painel de controle'] },
+  ],
+};
+
+/* ══════════════════════════════════════════
+   STATE — estado reativo da aplicação
+   ══════════════════════════════════════════ */
+let state = {
+  tasks: [],
+  checklistStates: {},
+  history: [],
+  currentView: 'overview',
+  editingTaskId: null,
+  kanbanFilter: '',
+};
+
+/* ══════════════════════════════════════════
+   CONFIGURAÇÃO — Google Apps Script
+   Substitua a URL abaixo pela URL da sua
+   Web App publicada no Apps Script.
+   ══════════════════════════════════════════ */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXOKm4xanoGgR_pwQLSssBxxmboPlMSsfof0zhZ7J3IAzKViotIsTFNUZ22_Y4zG9BJQ/exec';
+
+/* ══════════════════════════════════════════
+   HELPER — indicador de sincronização
+   ══════════════════════════════════════════ */
+function setSyncBadge(status) {
+  const badge = document.getElementById('syncBadge');
+  if (!badge) return;
+  const styles = {
+    saving: { text: '⟳ Salvando…', bg: '#E8F0FB', color: '#185FA5', display: '' },
+    saved:  { text: '✓ Salvo',     bg: '#EAF3DE', color: '#3B6D11', display: '' },
+    error:  { text: '⚠ Erro sync', bg: '#FCEBEB', color: '#A32D2D', display: '' },
+    hidden: { display: 'none' },
+  };
+  const s = styles[status] || styles.hidden;
+  badge.style.display     = s.display;
+  badge.style.background  = s.bg    || '';
+  badge.style.color       = s.color || '';
+  badge.textContent       = s.text  || '';
+  if (status === 'saved') setTimeout(() => setSyncBadge('hidden'), 2500);
+}
+
+/* ══════════════════════════════════════════
+   PERSISTÊNCIA — localStorage (fallback)
+   Mantido como cache local para funcionamento
+   offline e resposta imediata na UI.
+   ══════════════════════════════════════════ */
+const STORE_KEY = 'monumenta_gp_v5';
+
+function saveLocalCache() {
+  try {
+    localStorage.setItem(STORE_KEY + '_tasks',      JSON.stringify(state.tasks));
+    localStorage.setItem(STORE_KEY + '_checklists', JSON.stringify(state.checklistStates));
+    localStorage.setItem(STORE_KEY + '_history',    JSON.stringify(state.history));
+  } catch(e) { console.warn('Cache local error:', e); }
+}
+
+function loadLocalCache() {
+  try {
+    const t = localStorage.getItem(STORE_KEY + '_tasks');
+    const c = localStorage.getItem(STORE_KEY + '_checklists');
+    const h = localStorage.getItem(STORE_KEY + '_history');
+    if (t) state.tasks           = JSON.parse(t);
+    else   state.tasks           = [...DB.tasks];
+    if (c) state.checklistStates = JSON.parse(c);
+    if (h) state.history         = JSON.parse(h);
+  } catch(e) {
+    state.tasks = [...DB.tasks];
+  }
+}
+
+/* ══════════════════════════════════════════
+   PERSISTÊNCIA — Google Sheets (principal)
+   ══════════════════════════════════════════ */
+
+// Verifica se a URL do Apps Script foi configurada
+function sheetsEnabled() {
+  return SCRIPT_URL && SCRIPT_URL !== 'COLE_SUA_URL_AQUI';
+}
+
+// Envia uma ação para o Apps Script em background (fire-and-forget).
+// Usa no-cors porque o Apps Script faz redirect 302 e o CORS não passa no redirect.
+// Com no-cors a resposta é opaca (não lemos o body), mas a gravação ocorre normalmente.
+function syncToSheets(payload) {
+  if (!sheetsEnabled()) return;
+  setSyncBadge('saving');
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  .then(() => setSyncBadge('saved'))
+  .catch(err => {
+    console.warn('Sync write error:', err);
+    setSyncBadge('error');
+  });
+}
+
+// Carrega todos os dados do Sheets na inicialização via JSONP.
+// JSONP é necessário porque o Apps Script faz redirect 302 e o CORS
+// não sobrevive ao redirect — o <script> tag não tem essa limitação.
+function loadFromSheets() {
+  if (!sheetsEnabled()) return;
+  setSyncBadge('saving');
+
+  const callbackName = '__monumentaCallback_' + Date.now();
+  const url = SCRIPT_URL + '?callback=' + callbackName + '&t=' + Date.now();
+
+  // Define o callback global que o Apps Script vai chamar
+  window[callbackName] = function(data) {
+    // Limpa o script tag e o callback global
+    try { document.head.removeChild(script); } catch(e) {}
+    delete window[callbackName];
+
+    if (!data || !data.ok) {
+      console.warn('Sheets load error:', data && data.error);
+      setSyncBadge('error');
+      return;
+    }
+
+    // Atualiza state com dados do Sheets — sempre substitui,
+    // mesmo que o array esteja vazio (ex: tarefa excluída direto na planilha)
+    state.tasks           = Array.isArray(data.tasks)           ? data.tasks           : [];
+    state.checklistStates = data.checklistStates && typeof data.checklistStates === 'object' ? data.checklistStates : {};
+    state.history         = Array.isArray(data.history)         ? data.history         : [];
+
+    // Atualiza cache local com dados frescos
+    saveLocalCache();
+
+    // Re-renderiza com dados do Sheets
+    renderView(state.currentView);
+    updateSidebarBadges();
+    setSyncBadge('saved');
+  };
+
+  // Timeout de segurança: se o Apps Script demorar mais de 15s, mostra erro
+  const timeout = setTimeout(() => {
+    if (window[callbackName]) {
+      delete window[callbackName];
+      try { document.head.removeChild(script); } catch(e) {}
+      console.warn('Sheets load timeout');
+      setSyncBadge('error');
+    }
+  }, 15000);
+
+  // Injeta o script tag que carrega o Apps Script como JSONP
+  const script = document.createElement('script');
+  script.src = url;
+  script.onerror = function() {
+    clearTimeout(timeout);
+    delete window[callbackName];
+    console.warn('Sheets script load error');
+    setSyncBadge('error');
+  };
+  document.head.appendChild(script);
+}
+
+/* ══════════════════════════════════════════
+   PERSISTÊNCIA — interface pública
+   Chamada por todo o resto do código.
+   Estratégia: optimistic UI (atualiza local
+   imediatamente, sincroniza Sheets em bg).
+   ══════════════════════════════════════════ */
+
+// saveToStorage é chamada após toda ação (salvar tarefa, toggle checklist, etc.)
+// Mantemos o nome original para não precisar alterar os outros pontos do código.
+function saveToStorage() {
+  saveLocalCache();
+  // A sincronização específica (saveTask, toggleCheck, etc.) é chamada
+  // diretamente nos pontos de ação — ver saveTask(), deleteCurrentTask(), toggleCheck()
+}
+
+// loadFromStorage é chamada no init()
+async function loadFromStorage() {
+  // 1. Carrega o cache local imediatamente → UI responsiva
+  loadLocalCache();
+
+  // 2. Busca dados frescos do Sheets via JSONP (sem await — callback assíncrono)
+  loadFromSheets();
+}
+
+/* ══════════════════════════════════════════
+   UTILITÁRIOS
+   ══════════════════════════════════════════ */
+function uid() {
+  return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatDate(iso) {
+  if(!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function isOverdue(prazo) {
+  return prazo && prazo < today();
+}
+
+function isDueToday(prazo) {
+  return prazo && prazo === today();
+}
+
+function getBlock(id) {
+  return DB.blocks.find(b => b.id === id);
+}
+
+function toast(msg, duration = 2800) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+
+function logHistory(msg) {
+  const now = new Date();
+  const entry = {
+    time: now.toLocaleString('pt-BR'),
+    msg,
+  };
+  state.history.unshift(entry);
+  if(state.history.length > 200) state.history.pop();
+  // Sincroniza nova entrada de histórico com Sheets em background
+  syncToSheets({ action: 'logHistory', time: entry.time, msg: entry.msg });
+}
+
+/* ══════════════════════════════════════════
+   NAVEGAÇÃO
+   ══════════════════════════════════════════ */
+const viewMeta = {
+  overview:  { title: 'Visão Geral', sub: 'Painel de controle operacional · 11 blocos ativos' },
+  rotina:    { title: 'Rotina Diária', sub: 'Tarefas atrasadas, vencimentos e prioridades do dia' },
+  kanban:    { title: 'Kanban', sub: 'Gestão de tarefas por status · todos os blocos' },
+  checklists:{ title: 'Checklists', sub: 'Checklists operacionais por bloco · 11 processos' },
+  rotinas:   { title: 'Ritmo Semanal', sub: 'Cadência de atividades semanais e mensais' },
+  fechamento:{ title: 'Fechamento', sub: 'Relatório de fechamento semanal e mensal' },
+  historico: { title: 'Log de Ações', sub: 'Histórico completo de alterações e registros' },
+};
+
+function goTo(view) {
+  state.currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+
+  // Ativa nav item
+  const navBtns = document.querySelectorAll('.nav-item');
+  navBtns.forEach(b => {
+    if(b.getAttribute('onclick')?.includes("'" + view + "'")) b.classList.add('active');
+  });
+
+  const meta = viewMeta[view];
+  if(meta) {
+    document.getElementById('topbarTitle').textContent = meta.title;
+    document.getElementById('topbarSub').textContent = meta.sub;
+  }
+
+  renderView(view);
+}
+
+function renderView(view) {
+  switch(view) {
+    case 'overview':   renderOverview(); break;
+    case 'rotina':     renderRotinaDiaria(); break;
+    case 'kanban':     renderKanban(); break;
+    case 'checklists': renderChecklists(); break;
+    case 'rotinas':    renderRotinas(); break;
+    case 'fechamento': renderFechamento(); break;
+    case 'historico':  renderHistorico(); break;
+  }
+}
+
+/* ══════════════════════════════════════════
+   RENDER: VISÃO GERAL
+   ══════════════════════════════════════════ */
+function renderOverview() {
+  updateKPIs();
+  renderBlocksGrid();
+  renderAlerts();
+  updateSidebarBadges();
+}
+
+function updateKPIs() {
+  const tasks = state.tasks;
+  const pendente   = tasks.filter(t => t.status === 'pendente').length;
+  const andamento  = tasks.filter(t => t.status === 'andamento').length;
+  const atrasada   = tasks.filter(t => t.status === 'atrasada' || (t.status !== 'concluida' && isOverdue(t.prazo))).length;
+  const concluida  = tasks.filter(t => t.status === 'concluida').length;
+  const ativas     = pendente + andamento + atrasada;
+
+  document.getElementById('kpiAtivas').textContent     = ativas;
+  document.getElementById('kpiPendentes').textContent  = pendente;
+  document.getElementById('kpiAndamento').textContent  = andamento;
+  document.getElementById('kpiAtrasadas').textContent  = atrasada;
+  document.getElementById('kpiConcluidas').textContent = concluida;
+}
+
+function renderBlocksGrid() {
+  const grid = document.getElementById('blocksGrid');
+  grid.innerHTML = '';
+  DB.blocks.forEach(b => {
+    const bTasks = state.tasks.filter(t => t.blockId === b.id);
+    const p  = bTasks.filter(t => t.status === 'pendente').length;
+    const a  = bTasks.filter(t => t.status === 'andamento').length;
+    const at = bTasks.filter(t => t.status === 'atrasada' || (t.status !== 'concluida' && isOverdue(t.prazo))).length;
+    const c  = bTasks.filter(t => t.status === 'concluida').length;
+    const total = p + a + at + c;
+    const pct = total ? Math.round((c / total) * 100) : 0;
+
+    const statusClass = b.status === 'ok' ? 'ok' : b.status === 'alert' ? 'alert' : 'critical';
+    const badgeClass  = statusClass === 'ok' ? 'badge-ok' : statusClass === 'alert' ? 'badge-alert' : 'badge-crit';
+    const badgeLabel  = statusClass === 'ok' ? 'Ok' : statusClass === 'alert' ? 'Atenção' : 'Crítico';
+
+    const bar = (val) => total ? Math.round((val / total) * 100) : 0;
+
+    grid.innerHTML += `
+      <div class="block-card ${statusClass}" onclick="filterAndGoKanban('${b.id}')">
+        <div class="block-head">
+          <div class="block-icon" style="background:${b.color}22;color:${b.color};">${b.icon}</div>
+          <div class="block-name">${b.name}</div>
+        </div>
+        <span class="badge ${badgeClass}" style="margin-bottom:10px;">${badgeLabel}</span>
+        <div class="task-mini">
+          <div class="task-row-mini"><span class="lbl">Concluídas</span><div class="bar-w"><div class="bar-f" style="width:${bar(c)}%;background:#639922;"></div></div><span class="cnt">${c}</span></div>
+          <div class="task-row-mini"><span class="lbl">Em andamento</span><div class="bar-w"><div class="bar-f" style="width:${bar(a)}%;background:#378ADD;"></div></div><span class="cnt">${a}</span></div>
+          <div class="task-row-mini"><span class="lbl">Pendentes</span><div class="bar-w"><div class="bar-f" style="width:${bar(p)}%;background:#BA7517;"></div></div><span class="cnt">${p}</span></div>
+          <div class="task-row-mini"><span class="lbl">Atrasadas</span><div class="bar-w"><div class="bar-f" style="width:${bar(at)}%;background:#A32D2D;"></div></div><span class="cnt">${at}</span></div>
+        </div>
+        ${b.alert ? `<div class="alert-chip">⚠ ${b.alert}</div>` : ''}
+      </div>`;
+  });
+}
+
+function renderAlerts() {
+  const list = document.getElementById('alertsList');
+  const alertBlocks = DB.blocks.filter(b => b.alert);
+  const overdueTasks = state.tasks.filter(t => t.status === 'atrasada' || (t.status !== 'concluida' && isOverdue(t.prazo)));
+
+  if(!alertBlocks.length && !overdueTasks.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-text">Nenhum alerta ativo — tudo sob controle!</div></div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  alertBlocks.forEach(b => {
+    const lvl = b.status === 'critical' ? '' : 'alert-lvl';
+    list.innerHTML += `
+      <div class="alert-item ${lvl}">
+        <div class="alert-icon">${b.icon}</div>
+        <div class="alert-body">
+          <div class="alert-name">${b.name}</div>
+          <div class="alert-msg">⚠ ${b.alert}</div>
+        </div>
+      </div>`;
+  });
+
+  if(overdueTasks.length) {
+    list.innerHTML += `
+      <div class="alert-item">
+        <div class="alert-icon">⏰</div>
+        <div class="alert-body">
+          <div class="alert-name">${overdueTasks.length} tarefa${overdueTasks.length > 1 ? 's' : ''} com prazo vencido</div>
+          <div class="alert-msg">${overdueTasks.map(t => t.title).join(' · ')}</div>
+        </div>
+      </div>`;
+  }
+}
+
+function updateSidebarBadges() {
+  const atrasadas = state.tasks.filter(t => t.status === 'atrasada' || (t.status !== 'concluida' && isOverdue(t.prazo))).length;
+  const followups = state.tasks.filter(t => t.followup === 'sim' && t.status !== 'concluida').length;
+  const kanbanPend = state.tasks.filter(t => t.status !== 'concluida').length;
+
+  const bR = document.getElementById('badgeRotina');
+  const bK = document.getElementById('badgeKanban');
+  if(bR) { bR.textContent = atrasadas || '—'; bR.style.display = atrasadas ? '' : 'none'; }
+  if(bK) { bK.textContent = kanbanPend; bK.className = 'nav-badge blue'; }
+}
+
+/* ══════════════════════════════════════════
+   RENDER: ROTINA DIÁRIA
+   ══════════════════════════════════════════ */
+function renderRotinaDiaria() {
+  const tasks = state.tasks;
+  const atrasadas  = tasks.filter(t => (t.status === 'atrasada' || isOverdue(t.prazo)) && t.status !== 'concluida');
+  const hoje       = tasks.filter(t => isDueToday(t.prazo) && t.status !== 'concluida');
+  const followups  = tasks.filter(t => t.followup === 'sim' && t.status !== 'concluida');
+  const prioridades = tasks.filter(t => t.prioridade === 'alta' && t.status !== 'concluida').slice(0, 3);
+
+  const renderList = (el, items, dot) => {
+    if(!items.length) return;
+    el.innerHTML = items.map(t => {
+      const b = getBlock(t.blockId);
+      return `<div class="rotina-item">
+        <div class="rotina-dot" style="background:${dot};"></div>
+        <div>
+          <div style="font-size:12px;color:var(--tx1);font-weight:500;">${t.title}</div>
+          <div style="font-size:11px;color:var(--tx3);">${b ? b.name : ''} ${t.responsavel ? '· ' + t.responsavel : ''} ${t.prazo ? '· ' + formatDate(t.prazo) : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  if(atrasadas.length) renderList(document.getElementById('rotinaAtrasadas'), atrasadas, '#A32D2D');
+  if(hoje.length) renderList(document.getElementById('rotinaHoje'), hoje, '#BA7517');
+  if(followups.length) renderList(document.getElementById('rotinaFollowups'), followups, '#185FA5');
+  if(prioridades.length) renderList(document.getElementById('rotinaPrioridades'), prioridades, '#534AB7');
+
+  // Resumo executivo
+  const resumo = document.getElementById('resumoDia');
+  const total = atrasadas.length + hoje.length;
+  resumo.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+      <div style="text-align:center;">
+        <div style="font-size:28px;font-weight:600;color:#A32D2D;">${atrasadas.length}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Atrasadas</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:28px;font-weight:600;color:#BA7517;">${hoje.length}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Vencem hoje</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:28px;font-weight:600;color:#185FA5;">${followups.length}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Follow-ups</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:28px;font-weight:600;color:#534AB7;">${prioridades.length}</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:3px;">Prioridades</div>
+      </div>
+    </div>
+    ${total > 0 ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--tx2);">
+      ⚡ Você tem <strong>${total} itens urgentes</strong> hoje. Comece pelas tarefas atrasadas antes de qualquer outra coisa.
+    </div>` : `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--ok);">
+      ✅ Nenhuma urgência crítica hoje — dia limpo para focar nas prioridades planejadas.
+    </div>`}`;
+}
+
+/* ══════════════════════════════════════════
+   RENDER: KANBAN
+   ══════════════════════════════════════════ */
+function renderKanban() {
+  // Preencher filtro de bloco
+  const sel = document.getElementById('kanbanFilter');
+  if(sel.options.length === 1) {
+    DB.blocks.forEach(b => {
+      const o = document.createElement('option');
+      o.value = b.id;
+      o.textContent = b.name;
+      sel.appendChild(o);
+    });
+  }
+
+  const board = document.getElementById('kanbanBoard');
+  const cols = [
+    { key: 'pendente',  label: 'Pendente',     color: '#BA7517' },
+    { key: 'andamento', label: 'Em andamento',  color: '#185FA5' },
+    { key: 'atrasada',  label: 'Atrasada',      color: '#A32D2D' },
+    { key: 'concluida', label: 'Concluída',      color: '#3B6D11' },
+  ];
+
+  const filter = state.kanbanFilter;
+  let tasks = filter ? state.tasks.filter(t => t.blockId === filter) : state.tasks;
+
+  // Marca como atrasada automaticamente
+  tasks = tasks.map(t => {
+    if(t.status !== 'concluida' && isOverdue(t.prazo) && t.status !== 'atrasada') {
+      return { ...t, _autoLate: true };
+    }
+    return t;
+  });
+
+  board.innerHTML = '';
+  cols.forEach(col => {
+    let items = col.key === 'atrasada'
+      ? tasks.filter(t => t.status === 'atrasada' || t._autoLate)
+      : tasks.filter(t => t.status === col.key && !t._autoLate);
+
+    board.innerHTML += `
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+          <div class="kanban-col-title" style="color:${col.color};">${col.label}</div>
+          <span class="kanban-col-count">${items.length}</span>
+        </div>
+        ${items.map(t => {
+          const b = getBlock(t.blockId);
+          const late = t.status === 'atrasada' || t._autoLate;
+          const dueClass = late ? 'late' : '';
+          return `<div class="kanban-card ${late ? 'overdue' : ''}" style="border-left-color:${b ? b.color : '#ccc'};" onclick="openModalEditTask('${t.id}')">
+            <div class="k-title">${t.title}</div>
+            <div class="k-meta">
+              <span style="color:${b ? b.color : '#999'}">${b ? b.icon + ' ' + b.name.split('.')[1]?.trim() : ''}</span>
+              ${t.responsavel ? `<span class="k-resp">· ${t.responsavel}</span>` : ''}
+              ${t.prazo ? `<span class="k-due ${dueClass}">${formatDate(t.prazo)}</span>` : ''}
+              <span class="prio prio-${t.prioridade}">${t.prioridade}</span>
+            </div>
+          </div>`;
+        }).join('')}
+        <button class="kanban-add" onclick="openModalNewTaskInCol('${col.key}')">+ Adicionar tarefa</button>
+      </div>`;
+  });
+}
+
+function filterKanban(val) {
+  state.kanbanFilter = val;
+  renderKanban();
+}
+
+function filterAndGoKanban(blockId) {
+  state.kanbanFilter = blockId;
+  document.getElementById('kanbanFilter').value = blockId;
+  goTo('kanban');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: CHECKLISTS
+   ══════════════════════════════════════════ */
+function renderChecklists() {
+  const grid = document.getElementById('checklistGrid');
+  grid.innerHTML = '';
+
+  DB.blocks.forEach(b => {
+    const state_b = state.checklistStates[b.id] || {};
+    let total = 0, done = 0;
+    b.groups.forEach(g => { total += g.items.length; });
+    b.groups.forEach((g, gi) => {
+      g.items.forEach((_, ii) => { if(state_b[gi + '_' + ii]) done++; });
+    });
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const fillColor = pct === 100 ? '#639922' : pct > 50 ? '#378ADD' : pct > 0 ? '#BA7517' : '#E24B4A';
+
+    const groupsHTML = b.groups.map((g, gi) => {
+      const hl = g.highlight ? ' highlight' : '';
+      const itemsHTML = g.items.map((item, ii) => {
+        const checked = state_b[gi + '_' + ii];
+        return `<div class="cl-row" onclick="toggleCheck('${b.id}',${gi},${ii},this)">
+          <div class="cl-checkbox${checked ? ' checked' : ''}">${checked ? '✓' : ''}</div>
+          <div>
+            <div class="cl-text">${item.q}</div>
+            ${item.s ? `<div class="cl-sub">${item.s}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+      return `<div class="cl-group-label${hl}">${g.title}</div>${itemsHTML}`;
+    }).join('');
+
+    grid.innerHTML += `
+      <div class="cl-card" style="border-top-color:${b.color};">
+        <div class="cl-head">
+          <div class="cl-title" style="color:${b.color};">${b.icon} ${b.name}</div>
+          <div class="cl-pct" id="clpct_${b.id}">${done}/${total} · ${pct}%</div>
+        </div>
+        <div class="progress-wrap" style="margin-bottom:14px;">
+          <div class="progress-fill" id="clfill_${b.id}" style="width:${pct}%;background:${fillColor};"></div>
+        </div>
+        ${groupsHTML}
+        <div class="cl-tip"><span style="font-size:14px;flex-shrink:0;">⭐</span><span><strong>Boa prática:</strong> ${b.boasPraticas}</span></div>
+      </div>`;
+  });
+}
+
+function toggleCheck(blockId, gi, ii, el) {
+  const row = el.closest ? el.closest('.cl-row') : el.parentElement;
+  const cb = row.querySelector('.cl-checkbox');
+  if(!state.checklistStates[blockId]) state.checklistStates[blockId] = {};
+  const key = gi + '_' + ii;
+  const newVal = !state.checklistStates[blockId][key];
+  state.checklistStates[blockId][key] = newVal;
+  cb.classList.toggle('checked', newVal);
+  cb.textContent = newVal ? '✓' : '';
+
+  const b = DB.blocks.find(x => x.id === blockId);
+  let total = 0, done = 0;
+  b.groups.forEach(g => { total += g.items.length; });
+  b.groups.forEach((g, gi2) => {
+    g.items.forEach((_, ii2) => { if(state.checklistStates[blockId][gi2 + '_' + ii2]) done++; });
+  });
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const fillColor = pct === 100 ? '#639922' : pct > 50 ? '#378ADD' : pct > 0 ? '#BA7517' : '#E24B4A';
+
+  const pctEl = document.getElementById('clpct_' + blockId);
+  const fillEl = document.getElementById('clfill_' + blockId);
+  if(pctEl) pctEl.textContent = done + '/' + total + ' · ' + pct + '%';
+  if(fillEl) { fillEl.style.width = pct + '%'; fillEl.style.background = fillColor; }
+
+  const item = b.groups[gi]?.items[ii];
+  logHistory(`Checklist [${b.name}] → "${item?.q?.replace(/<[^>]+>/g,'')}" marcado como ${newVal ? 'concluído' : 'pendente'}`);
+  saveToStorage();
+  // Sincroniza estado do checklist com Sheets em background
+  syncToSheets({ action: 'toggleCheck', blockId, groupIndex: gi, itemIndex: ii, checked: newVal });
+}
+
+function resetChecklists() {
+  if(!confirm('Resetar todos os checklists? Isso apaga o progresso atual.')) return;
+  state.checklistStates = {};
+  saveToStorage();
+  renderChecklists();
+  toast('Checklists resetados');
+  logHistory('Todos os checklists foram resetados');
+  // Sincroniza reset com Sheets em background
+  syncToSheets({ action: 'resetChecklists' });
+}
+
+function exportChecklist() {
+  let txt = `RELATÓRIO DE CHECKLISTS — Gestão de Pessoas Monumenta\n`;
+  txt += `Gerado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
+  DB.blocks.forEach(b => {
+    const s = state.checklistStates[b.id] || {};
+    let total = 0, done = 0;
+    b.groups.forEach(g => total += g.items.length);
+    b.groups.forEach((g, gi) => g.items.forEach((_, ii) => { if(s[gi+'_'+ii]) done++; }));
+    const pct = total ? Math.round((done/total)*100) : 0;
+    txt += `${b.icon} ${b.name}\n`;
+    txt += `  Progresso: ${done}/${total} (${pct}%)\n`;
+    b.groups.forEach((g, gi) => {
+      txt += `  [${g.title}]\n`;
+      g.items.forEach((item, ii) => {
+        const checked = s[gi+'_'+ii] ? '✓' : '○';
+        txt += `    ${checked} ${item.q.replace(/<[^>]+>/g,'')}\n`;
+      });
+    });
+    txt += '\n';
+  });
+  const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `checklist_monumenta_${today()}.txt`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('Relatório exportado!');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: ROTINAS
+   ══════════════════════════════════════════ */
+function renderRotinas() {
+  const todayName = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][new Date().getDay()];
+
+  const weekRow = document.getElementById('weekRow');
+  weekRow.innerHTML = DB.weekDays.map(d => {
+    const isToday = d.name === todayName || (todayName === 'Domingo' && d.name === 'Segunda'); // aproximação
+    return `<div class="day-col ${isToday ? 'today' : ''}">
+      <div class="day-name">${d.name}${isToday ? ' · hoje' : ''}</div>
+      ${d.tasks.map(t => `<div class="day-task">
+        <div class="rotina-dot" style="background:#378ADD;margin-top:4px;flex-shrink:0;"></div>
+        ${t}
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  const monthlyGrid = document.getElementById('monthlyGrid');
+  monthlyGrid.innerHTML = DB.monthlyRoutines.map(r => `
+    <div class="monthly-card">
+      <div class="monthly-title" style="color:${r.color};">${r.icon} ${r.title}</div>
+      ${r.items.map(i => `<div class="rotina-item">
+        <div class="rotina-dot" style="background:${r.color};"></div>
+        ${i}
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: FECHAMENTO
+   ══════════════════════════════════════════ */
+function renderFechamento() {
+  const tasks = state.tasks;
+  const concluidas = tasks.filter(t => t.status === 'concluida');
+  const atrasadas  = tasks.filter(t => t.status === 'atrasada' || (t.status !== 'concluida' && isOverdue(t.prazo)));
+  const followups  = tasks.filter(t => t.followup === 'sim' && t.status !== 'concluida');
+
+  const fill = (elId, items, color, tag) => {
+    const el = document.getElementById(elId);
+    if(!items.length) { el.innerHTML = '<li style="color:var(--tx3);font-size:12px;padding:8px 0;">Nenhum item</li>'; return; }
+    el.innerHTML = items.map(t => {
+      const b = getBlock(t.blockId);
+      return `<li>
+        <span class="fechamento-tag" style="background:${b ? b.color + '22' : 'var(--surface2)'};color:${b ? b.color : 'var(--tx2)'};">${b ? b.icon : ''}</span>
+        ${t.title} ${t.responsavel ? '· ' + t.responsavel : ''}
+      </li>`;
+    }).join('');
+  };
+
+  fill('fechSemConcluidas', concluidas.slice(0,8), '#639922', '✓');
+  fill('fechSemAtrasadas',  atrasadas, '#A32D2D', '!');
+  fill('fechSemDecisoes',   followups, '#185FA5', '?');
+
+  // Próximos passos — gerados automaticamente
+  const proximos = [];
+  if(atrasadas.length) proximos.push({ title: `Regularizar ${atrasadas.length} tarefa(s) atrasada(s)`, blockId: atrasadas[0].blockId });
+  const highPrio = tasks.filter(t => t.prioridade === 'alta' && t.status !== 'concluida').slice(0,3);
+  highPrio.forEach(t => proximos.push(t));
+  fill('fechSemProximos', proximos, '#534AB7', '→');
+
+  // Indicadores mensais por bloco
+  const indEl = document.getElementById('fechMesIndicadores');
+  indEl.innerHTML = DB.blocks.map(b => {
+    const bTasks = tasks.filter(t => t.blockId === b.id);
+    const c = bTasks.filter(t => t.status === 'concluida').length;
+    const total = bTasks.length;
+    const pct = total ? Math.round((c/total)*100) : 0;
+    return `<li>
+      <span class="fechamento-tag" style="background:${b.color}22;color:${b.color};">${b.icon}</span>
+      ${b.name.replace(/^\d+\.\s/,'')} · ${pct}% concluído
+    </li>`;
+  }).join('');
+
+  // Evolução checklists
+  const clEl = document.getElementById('fechMesChecklists');
+  clEl.innerHTML = DB.blocks.map(b => {
+    const s = state.checklistStates[b.id] || {};
+    let total = 0, done = 0;
+    b.groups.forEach(g => total += g.items.length);
+    b.groups.forEach((g,gi) => g.items.forEach((_,ii) => { if(s[gi+'_'+ii]) done++; }));
+    const pct = total ? Math.round((done/total)*100) : 0;
+    const color = pct === 100 ? '#639922' : pct > 50 ? '#378ADD' : pct > 0 ? '#BA7517' : '#A32D2D';
+    return `<li>
+      <span class="fechamento-tag" style="background:${color}22;color:${color};">${pct}%</span>
+      ${b.name.replace(/^\d+\.\s/,'')}
+    </li>`;
+  }).join('');
+
+  // Riscos
+  const riscosEl = document.getElementById('fechMesRiscos');
+  const riscos = [];
+  if(atrasadas.length >= 3) riscos.push({ title: `${atrasadas.length} tarefas atrasadas — risco de acúmulo`, blockId: 'time' });
+  DB.blocks.filter(b => b.status === 'critical').forEach(b => riscos.push({ title: `${b.name} em status crítico`, blockId: b.id }));
+  DB.blocks.filter(b => b.status === 'alert').forEach(b => riscos.push({ title: `${b.name} requer atenção`, blockId: b.id }));
+  if(!riscos.length) riscos.push({ title: 'Nenhum risco crítico identificado', blockId: null });
+  fill('fechMesRiscos', riscos, '#A32D2D', '⚠');
+
+  // Recomendações
+  const recomEl = document.getElementById('fechMesRecom');
+  const recom = [];
+  if(atrasadas.filter(t => t.blockId === 'time').length >= 2) recom.push({ title: 'Priorizar regularização do timesheet — 3+ semanas em atraso', blockId: 'time' });
+  recom.push({ title: 'Revisar frequência das aulas de inglês dos coordenadores', blockId: 'gest' });
+  recom.push({ title: 'Checar vencimento de contratos e licenças', blockId: 'comp' });
+  recom.push({ title: 'Planejar comunicações do próximo mês com antecedência', blockId: 'com' });
+  fill('fechMesRecom', recom, '#534AB7', '💡');
+}
+
+/* ══════════════════════════════════════════
+   RENDER: HISTÓRICO
+   ══════════════════════════════════════════ */
+function renderHistorico() {
+  const list = document.getElementById('historyList');
+  if(!state.history.length) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">◷</div><div class="empty-text">Nenhuma ação registrada ainda. As ações aparecem aqui automaticamente.</div></div>';
+    return;
+  }
+  list.innerHTML = state.history.map(h => `
+    <div class="history-item">
+      <div class="history-time">${h.time}</div>
+      <div class="history-text">${h.msg}</div>
+    </div>`).join('');
+}
+
+function clearHistory() {
+  if(!confirm('Limpar todo o histórico?')) return;
+  state.history = [];
+  saveToStorage();
+  renderHistorico();
+  toast('Histórico limpo');
+}
+
+/* ══════════════════════════════════════════
+   MODAL: NOVA/EDITAR TAREFA
+   ══════════════════════════════════════════ */
+function openModalNewTask() {
+  state.editingTaskId = null;
+  document.getElementById('modalTaskTitle').textContent = 'Nova Tarefa';
+  document.getElementById('taskTitle').value = '';
+  document.getElementById('taskStatus').value = 'pendente';
+  document.getElementById('taskResponsavel').value = '';
+  document.getElementById('taskPrazo').value = '';
+  document.getElementById('taskPrioridade').value = 'alta';
+  document.getElementById('taskFollowup').value = 'nao';
+  document.getElementById('taskObs').value = '';
+  document.getElementById('btnDeleteTask').style.display = 'none';
+  populateBlockSelect();
+  document.getElementById('modalTask').classList.add('open');
+}
+
+function openModalNewTaskInCol(status) {
+  openModalNewTask();
+  document.getElementById('taskStatus').value = status;
+}
+
+function openModalEditTask(taskId) {
+  const t = state.tasks.find(x => x.id === taskId);
+  if(!t) return;
+  state.editingTaskId = taskId;
+  document.getElementById('modalTaskTitle').textContent = 'Editar Tarefa';
+  document.getElementById('taskTitle').value = t.title;
+  document.getElementById('taskStatus').value = t.status;
+  document.getElementById('taskResponsavel').value = t.responsavel || '';
+  document.getElementById('taskPrazo').value = t.prazo || '';
+  document.getElementById('taskPrioridade').value = t.prioridade || 'alta';
+  document.getElementById('taskFollowup').value = t.followup || 'nao';
+  document.getElementById('taskObs').value = t.obs || '';
+  document.getElementById('btnDeleteTask').style.display = '';
+  populateBlockSelect(t.blockId);
+  document.getElementById('modalTask').classList.add('open');
+}
+
+function populateBlockSelect(selectedId) {
+  const sel = document.getElementById('taskBlock');
+  sel.innerHTML = DB.blocks.map(b => `<option value="${b.id}" ${b.id === selectedId ? 'selected' : ''}>${b.icon} ${b.name}</option>`).join('');
+}
+
+function closeModal() {
+  document.getElementById('modalTask').classList.remove('open');
+  state.editingTaskId = null;
+}
+
+function saveTask() {
+  const title = document.getElementById('taskTitle').value.trim();
+  if(!title) { toast('Preencha o título da tarefa'); return; }
+
+  const taskData = {
+    title,
+    blockId:     document.getElementById('taskBlock').value,
+    status:      document.getElementById('taskStatus').value,
+    responsavel: document.getElementById('taskResponsavel').value.trim(),
+    prazo:       document.getElementById('taskPrazo').value,
+    prioridade:  document.getElementById('taskPrioridade').value,
+    followup:    document.getElementById('taskFollowup').value,
+    obs:         document.getElementById('taskObs').value.trim(),
+  };
+
+  if(state.editingTaskId) {
+    const idx = state.tasks.findIndex(t => t.id === state.editingTaskId);
+    if(idx >= 0) {
+      state.tasks[idx] = { ...state.tasks[idx], ...taskData };
+      logHistory(`Tarefa editada: "${title}" → status: ${taskData.status}`);
+      toast('Tarefa atualizada!');
+      // Sincroniza com Sheets em background
+      syncToSheets({ action: 'saveTask', task: state.tasks[idx] });
+    }
+  } else {
+    const newTask = { id: uid(), ...taskData, createdAt: new Date().toISOString() };
+    state.tasks.unshift(newTask);
+    logHistory(`Nova tarefa criada: "${title}" [${getBlock(taskData.blockId)?.name || taskData.blockId}] · ${taskData.status}`);
+    toast('Tarefa criada!');
+    // Sincroniza com Sheets em background
+    syncToSheets({ action: 'saveTask', task: newTask });
+  }
+
+  saveToStorage();
+  closeModal();
+  renderView(state.currentView);
+  updateSidebarBadges();
+}
+
+function deleteCurrentTask() {
+  if(!state.editingTaskId) return;
+  const t = state.tasks.find(x => x.id === state.editingTaskId);
+  if(!confirm(`Excluir "${t?.title}"?`)) return;
+  const deletedId = state.editingTaskId;
+  state.tasks = state.tasks.filter(x => x.id !== state.editingTaskId);
+  logHistory(`Tarefa excluída: "${t?.title}"`);
+  saveToStorage();
+  // Sincroniza exclusão com Sheets em background
+  syncToSheets({ action: 'deleteTask', id: deletedId });
+  closeModal();
+  renderView(state.currentView);
+  updateSidebarBadges();
+  toast('Tarefa excluída');
+}
+
+/* ══════════════════════════════════════════
+   BUSCA DE TAREFAS
+   ══════════════════════════════════════════ */
+function searchTasks(query) {
+  if(!query.trim()) {
+    if(state.currentView !== 'overview') return;
+    renderOverview();
+    return;
+  }
+  const q = query.toLowerCase();
+  const results = state.tasks.filter(t =>
+    t.title.toLowerCase().includes(q) ||
+    (t.responsavel || '').toLowerCase().includes(q) ||
+    (getBlock(t.blockId)?.name || '').toLowerCase().includes(q)
+  );
+
+  // Mostra resultados no kanban
+  goTo('kanban');
+  const board = document.getElementById('kanbanBoard');
+  if(!results.length) {
+    board.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><div class="empty-text">Nenhuma tarefa encontrada para "' + query + '"</div></div>';
+    return;
+  }
+
+  const cols = ['pendente','andamento','atrasada','concluida'];
+  const colors = { pendente:'#BA7517', andamento:'#185FA5', atrasada:'#A32D2D', concluida:'#3B6D11' };
+  const labels = { pendente:'Pendente', andamento:'Em andamento', atrasada:'Atrasada', concluida:'Concluída' };
+
+  board.innerHTML = cols.map(col => {
+    const items = results.filter(t => t.status === col);
+    if(!items.length) return '';
+    return `<div class="kanban-col">
+      <div class="kanban-col-header">
+        <div class="kanban-col-title" style="color:${colors[col]};">${labels[col]}</div>
+        <span class="kanban-col-count">${items.length}</span>
+      </div>
+      ${items.map(t => {
+        const b = getBlock(t.blockId);
+        return `<div class="kanban-card" style="border-left-color:${b ? b.color : '#ccc'};" onclick="openModalEditTask('${t.id}')">
+          <div class="k-title">${t.title}</div>
+          <div class="k-meta">
+            <span style="color:${b ? b.color : '#999'}">${b ? b.icon + ' ' + b.name.split('.')[1]?.trim() : ''}</span>
+            ${t.responsavel ? `<span class="k-resp">· ${t.responsavel}</span>` : ''}
+            ${t.prazo ? `<span class="k-due">${formatDate(t.prazo)}</span>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   DATA NA SIDEBAR
+   ══════════════════════════════════════════ */
+function updateDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+  document.getElementById('sidebarDate').textContent = now.toLocaleDateString('pt-BR', opts);
+}
+
+/* ══════════════════════════════════════════
+   FECHAR MODAL AO CLICAR FORA
+   ══════════════════════════════════════════ */
+document.getElementById('modalTask').addEventListener('click', function(e) {
+  if(e.target === this) closeModal();
+});
+
+/* ══════════════════════════════════════════
+   ATALHO DE TECLADO: ESC fecha modal
+   ══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeModal();
+});
+
+/* ══════════════════════════════════════════
+   INICIALIZAÇÃO
+   ══════════════════════════════════════════ */
+async function init() {
+  await loadFromStorage(); // carrega cache local + busca Sheets
+  updateDate();
+  renderOverview();
+  updateSidebarBadges();
+}
+
+init();
+</script>
+</body>
+</html>
